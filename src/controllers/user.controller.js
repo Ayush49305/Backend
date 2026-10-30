@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
-import {user} from "../models/user.model.js"
+import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 
@@ -27,7 +27,7 @@ const registerUser=asyncHandler(async (req,res)=>{
     }
 
 
-    const existedUser=User.findone({
+    const existedUser= await User.findOne({
         $or:[{ username },{ email }]
     })
     if(existedUser){
@@ -35,18 +35,21 @@ const registerUser=asyncHandler(async (req,res)=>{
     }
 
 
-    const avatarLocalPath=req.files?.avatar[0]?.path;
-    const coverImageLocalPath=req.files?.coverImagePath[0]?.path;
+    const avatarLocalPath=req.files?.avatar?.[0]?.path;
+    const coverImageLocalPath=req.files?.coverImage?.[0]?.path;
 
-    if(!avatarLoaclPath){
+    console.log("req.files:", req.files);
+console.log("req.body:", req.body);
+
+    if(!avatarLocalPath){
         throw new ApiError(400,"Avatar is required")
     }
 
 
     const avatar=await uploadOnCloudinary(avatarLocalPath)
-    const coveriImage=await uploadOnCloudinary(coverImageLocalPath)
+    const coverImage=await uploadOnCloudinary(coverImageLocalPath)
 
-    if(!avatar){
+    if(!avatar?.url){
         throw new ApiError(400,"Avatar is required") 
     }
 
@@ -68,7 +71,7 @@ const registerUser=asyncHandler(async (req,res)=>{
     }
 
     return res.status(200).json(
-        new ApiResponse(201,userCreated,"User registered successfully")
+        new ApiResponse(201,createdUser,"User registered successfully")
     )
 })
 
