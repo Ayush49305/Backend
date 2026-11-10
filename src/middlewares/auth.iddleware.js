@@ -6,13 +6,24 @@ import {User} from "../models/user.model.js"
 
 
 export const verifyJWT=asyncHandler(async(req,res,next)=>{
-    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer","")
+    try{
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer","")
 
-    if(!token){
-        throw new ApiError(401,"Unauthorized access")
+        if(!token){
+            throw new ApiError(401,"Unauthorized access")
+        }
+
+        const decodeToken = JWT.verify(token,process.env.ACCESS_TOKEN_SECRET)
+
+        const user = User.finById(decodedToken?._id).select("-password -refreshToken")
+
+        if(!user){
+            throw new ApiError(401,"Invalid access token")
+        }
+
+        req.user=user;
+        next()
+    }catch(error){
+        throw ApiError(401,error?.message || "invalid access token")
     }
-
-    const decodeToken = JWT.verify(token,process.env.ACCESS_TOKEN_SECRET)
-
-    User.finById
 })
