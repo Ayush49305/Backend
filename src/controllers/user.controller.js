@@ -15,11 +15,17 @@ const generateAccessAndRefreshTokens=async (userId)=>{
         await user.save({validateBeforeSave:false})
 
         return {accessToken,refreshToken}
-        
-    } catch (error) {
-        throw new ApiError(501,"Something went wrong")
+
+    }catch (error) {
+        console.error("TOKEN GENERATION ERROR:", error);
+        throw error;
     }
 }
+        
+    // } catch (error) {
+    //     throw new ApiError(501,"Something went wrong")
+    // }
+
 
 const registerUser=asyncHandler(async (req,res)=>{
     
